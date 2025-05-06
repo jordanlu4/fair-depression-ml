@@ -45,7 +45,9 @@ print("Combined feature matrix shape:", X_combined.shape)
 # replace missing values with 0s just in case
 X_combined = np.nan_to_num(X_combined, nan=0)
 
-# select 1000 best features using chi-squared feature selection
+# select 1000 best features (words) using chi-squared feature selection
+# could be words with highest sentiment
+# could be how many times someone says "family"
 from sklearn.feature_selection import SelectKBest, chi2
 selector = SelectKBest(score_func=chi2, k=1000)
 X_selected = selector.fit_transform(X_combined, df_agg['gender'])  # gender is the target
