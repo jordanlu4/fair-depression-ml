@@ -8,7 +8,6 @@ import csv
 #Question b
 
 
-
 # sklearn and vaderSentiment for feature extraction
 from sklearn.feature_extraction.text import CountVectorizer
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
@@ -45,13 +44,24 @@ print("Combined feature matrix shape:", X_combined.shape)
 # replace missing values with 0s just in case
 X_combined = np.nan_to_num(X_combined, nan=0)
 
-# select 1000 best features (words) using chi-squared feature selection
-# could be words with highest sentiment
-# could be how many times someone says "family"
+# SelectKBest to get scores for all features
 from sklearn.feature_selection import SelectKBest, chi2
-selector = SelectKBest(score_func=chi2, k=1000)
-X_selected = selector.fit_transform(X_combined, df_agg['gender'])  # gender is the target
-print("Selected features shape:", X_selected.shape)
+selector = SelectKBest(score_func=chi2, k='all')  # Get scores for all features
+selector.fit(X_combined, df_agg['gender'])
+
+# Get indices of the top 1000 features
+top_1000_indices = np.argsort(selector.scores_)[-1000:]
+
+# Create a mask to exclude the top 1000 features
+mask = np.ones(X_combined.shape[1], dtype=bool)
+mask[top_1000_indices] = False
+
+# Exclude the top 1000 features
+X_reduced = X_combined[:, mask]
+print("Reduced feature matrix shape (excluding top 1000 features):", X_reduced.shape)
+
+# Proceed with the rest of the code using X_reduced instead of X_selected
+X_selected = X_reduced  # Update the variable for consistency
 
 # map gender values so model understands it
 # 2 = male (map to 0), 1 = female (map to 1)
